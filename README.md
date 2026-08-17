@@ -19,7 +19,6 @@ The objective of this assignment is to train, evaluate, and compare multiple mac
 * **GitHub Repository:** [https://github.com/payalmariya/ml-assignment-2](https://github.com/payalmariya/ml-assignment-2)
 * **Streamlit App URL:** [https://ml-assignment-2-dns68rarf7u8nqlidlbz5e.streamlit.app/](https://ml-assignment-2-dns68rarf7u8nqlidlbz5e.streamlit.app/)
 
-
 ---
 
 ## d. Models Used & Evaluation Metrics
@@ -28,11 +27,11 @@ The objective of this assignment is to train, evaluate, and compare multiple mac
 
 | ML Model Name | Accuracy | AUC | Precision | Recall | F1 | MCC |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Logistic Regression** | 0.7318 | 0.7847 | 0.7784 | 0.8173 | 0.7974 | 0.4026 |
-| **Decision Tree** | 0.7677 | 0.7463 | 0.8203 | 0.8197 | 0.8200 | 0.4925 |
-| **kNN** | 0.7497 | 0.8143 | 0.8038 | 0.8102 | 0.8070 | 0.4513 |
-| **Naive Bayes** | 0.6779 | 0.7433 | 0.7502 | 0.7514 | 0.7508 | 0.2957 |
-| **Random Forest (Ensemble)** | 0.8221 | 0.8948 | 0.8613 | 0.8634 | 0.8624 | 0.6107 |
+| **Logistic Regression** | 0.7344 | 0.7993 | 0.7729 | 0.8217 | 0.7965 | 0.4166 |
+| **Decision Tree** | 0.7323 | 0.7614 | 0.7821 | 0.7998 | 0.7909 | 0.4194 |
+| **kNN** | 0.7959 | 0.8771 | 0.8215 | 0.8655 | 0.8429 | 0.5537 |
+| **Naive Bayes** | 0.6846 | 0.7412 | 0.7424 | 0.7682 | 0.7551 | 0.3130 |
+| **Random Forest (Ensemble)** | 0.7944 | 0.8774 | 0.8206 | 0.8639 | 0.8417 | 0.5504 |
 
 ---
 
@@ -40,9 +39,9 @@ The objective of this assignment is to train, evaluate, and compare multiple mac
 
 | ML Model Name | Observation about model performance |
 | :--- | :--- |
-| **Logistic Regression** | Serves as a reliable linear baseline, reaching 73.18% accuracy and 0.7847 AUC score. Feature scaling via `StandardScaler` ensured optimal gradient convergence across continuous chemical attributes. |
-| **Decision Tree** | Outperforms the linear baseline with 76.77% accuracy and strong precision (82.03%), effectively capturing non-linear feature split boundaries across wine attributes. |
-| **kNN** | Achieves 74.97% accuracy and 0.8143 AUC. Distance-based spatial clustering effectively groups similar wine composition profiles following standardization. |
-| **Naive Bayes** | Obtains 67.79% accuracy and 0.2957 MCC. Performance is constrained by independence assumptions among correlated chemical features like sulfur dioxide levels and acidity. |
-| **Random Forest (Ensemble)** | Highest overall performer across all metrics, achieving 82.21% accuracy, 0.8948 AUC, 0.8624 F1-score, and 0.6107 MCC. Bagging decision trees successfully reduces individual decision tree variance. |
-| **Overall Winner for your dataset?** | **Random Forest (Ensemble)** is the overall winner on this dataset, leading across every single evaluation metric. |
+| **Logistic Regression** | Serves as a reliable linear baseline, reaching 73.44% accuracy and 0.7993 AUC score. Feature scaling via `StandardScaler` ensured optimal gradient convergence across continuous chemical attributes. |
+| **Decision Tree** | Achieves 73.23% accuracy and 0.7821 precision, capturing non-linear feature splits across chemical attributes but constrained by standard single-tree variance. |
+| **kNN** | Demonstrates outstanding performance with 79.59% accuracy and 0.8429 F1-score. Distance-based spatial clustering effectively groups similar wine composition profiles following standardization. |
+| **Naive Bayes** | Obtains 68.46% accuracy and 0.3130 MCC score. Performance is constrained by strict feature independence assumptions among correlated chemical variables like sulfur dioxide levels and acidity. |
+| **Random Forest (Ensemble)** | Top-tier performer achieving 0.8774 AUC score, 79.44% accuracy, and 0.8417 F1-score. Bagging decision trees successfully mitigates individual tree overfitting and provides robust decision boundaries. |
+| **Overall Winner for your dataset?** | **Random Forest (Ensemble)** and **kNN** emerge as joint top performers, with **Random Forest** achieving the highest ROC-AUC score (0.8774) and **kNN** achieving the top accuracy (0.7959). |

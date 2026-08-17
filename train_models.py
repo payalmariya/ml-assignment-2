@@ -15,78 +15,87 @@ from sklearn.metrics import (
     recall_score, f1_score, matthews_corrcoef
 )
 
-# Bypass macOS SSL Certificate Verification Error
 ssl._create_default_https_context = ssl._create_unverified_context
 
-# 1. Fetch UCI Wine Quality Datasets
-url_red = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
-url_white = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
+ARTIFACT_DIR = "model"
+SEED = 101
 
-df_red = pd.read_csv(url_red, sep=";")
-df_white = pd.read_csv(url_white, sep=";")
+def load_and_preprocess_wine_data():
+    url_red = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
+    url_white = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
 
-df_red['is_white_wine'] = 0
-df_white['is_white_wine'] = 1
+    red_df = pd.read_csv(url_red, sep=";")
+    white_df = pd.read_csv(url_white, sep=";")
 
-df = pd.concat([df_red, df_white], ignore_index=True)
+    red_df['is_white_wine'] = 0
+    white_df['is_white_wine'] = 1
 
-# Binary Target: 1 if quality >= 6, else 0
-df['target'] = (df['quality'] >= 6).astype(int)
-df = df.drop(columns=['quality'])
+    combined_df = pd.concat([red_df, white_df], ignore_index=True)
+    combined_df['target'] = (combined_df['quality'] >= 6).astype(int)
+    combined_df = combined_df.drop(columns=['quality'])
+    return combined_df
 
-# 2. Train-Test Split (30% test set)
-X = df.drop(columns=['target'])
-y = df['target']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+def run_training_pipeline():
+    wine_df = load_and_preprocess_wine_data()
 
-# Save test dataset to root directory
-test_df = X_test.copy()
-test_df['target'] = y_test
-test_df.to_csv("test_data.csv", index=False)
-print("Saved test_data.csv successfully.")
+    X = wine_df.drop(columns=['target'])
+    y = wine_df['target']
 
-# 3. Feature Scaling
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+    # Train-Test Split (30% test set)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.30, random_state=SEED, stratify=y
+    )
 
-os.makedirs("model", exist_ok=True)
-joblib.dump(scaler, "model/scaler.pkl")
+    # Export test dataset for Streamlit evaluation
+    eval_dataset = X_test.copy()
+    eval_dataset['target'] = y_test
+    eval_dataset.to_csv("test_data.csv", index=False)
 
-# 4. Define EXACT 5 Models from Assignment Table
-models = {
-    "Logistic Regression": LogisticRegression(max_iter=1000),
-    "Decision Tree": DecisionTreeClassifier(random_state=42),
-    "kNN": KNeighborsClassifier(),
-    "Naive Bayes": GaussianNB(),
-    "Random Forest": RandomForestClassifier(random_state=42)
-}
+    # Feature Scaling Pipeline
+    feature_scaler = StandardScaler()
+    X_train_scaled = feature_scaler.fit_transform(X_train)
+    X_test_scaled = feature_scaler.transform(X_test)
 
-# 5. Train & Evaluate
-results = []
-for name, model in models.items():
-    use_scaled = name in ["Logistic Regression", "kNN", "Naive Bayes"]
-    X_tr = X_train_scaled if use_scaled else X_train
-    X_te = X_test_scaled if use_scaled else X_test
+    os.makedirs(ARTIFACT_DIR, exist_ok=True)
+    joblib.dump(feature_scaler, os.path.join(ARTIFACT_DIR, "scaler.pkl"))
 
-    model.fit(X_tr, y_train)
+    # Custom model parameter configurations
+    classifiers = {
+        "Logistic Regression": LogisticRegression(C=0.85, max_iter=1000, random_state=SEED),
+        "Decision Tree": DecisionTreeClassifier(max_depth=9, min_samples_split=6, random_state=SEED),
+        "kNN": KNeighborsClassifier(n_neighbors=7, weights="distance"),
+        "Naive Bayes": GaussianNB(var_smoothing=1e-8),
+        "Random Forest": RandomForestClassifier(n_estimators=150, max_depth=12, min_samples_split=4, random_state=SEED)
+    }
 
-    file_name = f"model/{name.lower().replace(' ', '_')}.pkl"
-    joblib.dump(model, file_name)
+    metrics_log = []
+    scale_required = ["Logistic Regression", "kNN", "Naive Bayes"]
 
-    y_pred = model.predict(X_te)
-    y_prob = model.predict_proba(X_te)[:, 1] if hasattr(model, "predict_proba") else y_pred
+    for name, clf in classifiers.items():
+        X_tr = X_train_scaled if name in scale_required else X_train
+        X_te = X_test_scaled if name in scale_required else X_test
 
-    results.append({
-        "ML Model Name": name,
-        "Accuracy": round(accuracy_score(y_test, y_pred), 4),
-        "AUC": round(roc_auc_score(y_test, y_prob), 4),
-        "Precision": round(precision_score(y_test, y_pred), 4),
-        "Recall": round(recall_score(y_test, y_pred), 4),
-        "F1": round(f1_score(y_test, y_pred), 4),
-        "MCC": round(matthews_corrcoef(y_test, y_pred), 4)
-    })
+        clf.fit(X_tr, y_train)
 
-results_df = pd.DataFrame(results)
-print("\nEvaluation Summary (UCI Wine Quality Dataset):")
-print(results_df.to_string(index=False))
+        file_slug = name.lower().replace(" ", "_")
+        joblib.dump(clf, os.path.join(ARTIFACT_DIR, f"{file_slug}.pkl"))
+
+        preds = clf.predict(X_te)
+        probs = clf.predict_proba(X_te)[:, 1] if hasattr(clf, "predict_proba") else preds
+
+        metrics_log.append({
+            "ML Model Name": name,
+            "Accuracy": round(accuracy_score(y_test, preds), 4),
+            "AUC": round(roc_auc_score(y_test, probs), 4),
+            "Precision": round(precision_score(y_test, preds), 4),
+            "Recall": round(recall_score(y_test, preds), 4),
+            "F1": round(f1_score(y_test, preds), 4),
+            "MCC": round(matthews_corrcoef(y_test, preds), 4)
+        })
+
+    summary_df = pd.DataFrame(metrics_log)
+    print("\n--- Model Evaluation Summary ---")
+    print(summary_df.to_string(index=False))
+
+if __name__ == "__main__":
+    run_training_pipeline()

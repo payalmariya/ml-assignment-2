@@ -9,9 +9,9 @@ from sklearn.metrics import (
     confusion_matrix, classification_report
 )
 
-st.set_page_config(page_title="Chemical Classification Portal", layout="wide")
+st.set_page_config(page_title="Wine Quality Classification Portal", layout="wide")
 
-st.title("🍷 Chemical Classification & Evaluation Portal")
+st.title("🍷 Wine Quality Classification & Evaluation Portal")
 st.markdown("Upload test data, select a model architecture, and evaluate metrics.")
 
 # 1. Dataset Upload Option

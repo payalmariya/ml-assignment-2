@@ -17,7 +17,7 @@ The objective of this assignment is to train, evaluate, and compare multiple mac
 
 ## c. Repository & Deployment Links
 * **GitHub Repository:** [https://github.com/payalmariya/ml-assignment-2](https://github.com/payalmariya/ml-assignment-2)
-* **Streamlit App URL:** [https://YOUR_APP_NAME.streamlit.app](https://YOUR_APP_NAME.streamlit.app)
+* **Streamlit App URL:** [https://ml-assignment-2-dns68rarf7u8nqlidlbz5e.streamlit.app/](https://ml-assignment-2-dns68rarf7u8nqlidlbz5e.streamlit.app/)
 
 
 ---
